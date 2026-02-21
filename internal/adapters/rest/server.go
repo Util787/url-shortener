@@ -20,10 +20,10 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewRestServer(log *slog.Logger, config config.HTTPServerConfig, ) Server {
+func NewRestServer(log *slog.Logger, config config.HTTPServerConfig) Server {
 	handler := Handler{
-		log:         log,
-		,
+		log: log,
+		// shortener
 	}
 
 	httpServer := &http.Server{
