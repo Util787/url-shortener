@@ -8,7 +8,7 @@ import (
 )
 
 type shortenerUsecase interface {
-	SaveURL(longURL string) error
+	SaveURL(longURL string) (string, error)
 	GetLongURL(shortURL string) (string, error)
 	GetRandomURL() (string, error)
 	DeleteURL(id *string, longURL *string, shortURL *string) error
@@ -33,13 +33,14 @@ func (h *Handler) SaveURL(c *gin.Context) {
 		return
 	}
 
-	if err := h.ShortenerUsecase.SaveURL(req.LongURL); err != nil {
+	shortURL, err := h.ShortenerUsecase.SaveURL(req.LongURL)
+	if err != nil {
 		log.Error("failed to save URL", "error", err)
 		newErrorResponse(c, log, 500, "failed to save URL", err)
 		return
 	}
 
-	c.JSON(200, gin.H{"message": "URL saved successfully"})
+	c.JSON(200, gin.H{"message": "URL saved successfully with short URL: " + shortURL})
 }
 
 func (h *Handler) GetRandomURL(c *gin.Context) {

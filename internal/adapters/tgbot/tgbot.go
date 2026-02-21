@@ -12,7 +12,7 @@ import (
 // ShortenerUsecase describes the subset of usecase methods we need in the bot.
 // Accepts the concrete usecase produced by shortener.NewShortenerUsecase from main.
 type ShortenerUsecase interface {
-	SaveURL(longURL string) error
+	SaveURL(longURL string) (string, error)
 	GetRandomURL() (string, error)
 	DeleteURL(id *string, longURL *string, shortURL *string) error
 }
@@ -81,11 +81,12 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 		switch action {
 		case "save":
 			longURL := message.Text
-			if err := b.usecase.SaveURL(longURL); err != nil {
+			shortURL, err := b.usecase.SaveURL(longURL)
+			if err != nil {
 				msg := tgbotapi.NewMessage(chatID, "Ошибка при сохранении: "+err.Error())
 				b.botAPI.Send(msg)
 			} else {
-				msg := tgbotapi.NewMessage(chatID, "URL успешно сохранён")
+				msg := tgbotapi.NewMessage(chatID, "URL успешно сохранён с короткой ссылкой: "+shortURL)
 				b.botAPI.Send(msg)
 			}
 			b.setAwaiting(chatID, "")

@@ -11,10 +11,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *shortenerUsecase) SaveURL(longURL string) error {
+func (s *shortenerUsecase) SaveURL(longURL string) (string, error) {
 	ok, _ := validateURL(longURL)
 	if !ok {
-		return fmt.Errorf("invalid URL: %s", longURL)
+		return "", fmt.Errorf("invalid URL: %s", longURL)
 	}
 
 	id, shortURL := generateShortURL()
@@ -22,21 +22,26 @@ func (s *shortenerUsecase) SaveURL(longURL string) error {
 	//validation for duplicates
 	exists, err := s.storage.LongURLExists(context.Background(), longURL)
 	if err != nil {
-		return fmt.Errorf("failed to check if long URL exists: %w", err)
+		return "", fmt.Errorf("failed to check if long URL exists: %w", err)
 	}
 	if exists {
-		return fmt.Errorf("long URL already exists: %s", longURL)
+		return "", fmt.Errorf("long URL already exists: %s", longURL)
 	}
 
 	exists, err = s.storage.ShortURLExists(context.Background(), shortURL)
 	if err != nil {
-		return fmt.Errorf("failed to check if short URL exists: %w", err)
+		return "", fmt.Errorf("failed to check if short URL exists: %w", err)
 	}
 	if exists {
-		return fmt.Errorf("short URL already exists: %s", shortURL)
+		return "", fmt.Errorf("short URL already exists: %s", shortURL)
 	}
 
-	return s.storage.SaveURL(context.Background(), id, longURL, shortURL)
+	err = s.storage.SaveURL(context.Background(), id, longURL, shortURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to save URL mapping: %w", err)
+	}
+
+	return shortURL, nil
 }
 
 // returns bool and protocol(scheme)
