@@ -8,6 +8,7 @@ import (
 type Config struct {
 	PostgresConfig
 	HTTPServerConfig
+	TgBotConfig
 }
 
 type PostgresConfig struct {
@@ -21,6 +22,10 @@ type PostgresConfig struct {
 type HTTPServerConfig struct {
 	Host string `env:"HTTP_SERVER_HOST"`
 	Port int    `env:"HTTP_SERVER_PORT"`
+}
+
+type TgBotConfig struct {
+	Token string `env:"TG_BOT_TOKEN"`
 }
 
 func MustLoadConfig() Config {
