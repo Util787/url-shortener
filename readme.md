@@ -3,7 +3,7 @@
 Небольшая инструкция по запуску и использованию HTTP API сервиса сокращения ссылок.
 
 ### Коротко
-- Базовый префикс: `/api/v1`
+- Базовый префикс: `/`
 - Формат: JSON для POST-запросов
 
 ### Переменные окружения
@@ -17,91 +17,27 @@
 
 ### Запуск
 1. Запустите PostgreSQL (например, в Docker) и примените миграции из `migrations/postgres`.
-2. Создайте `.env` и заполните переменные.
-3. Запустите сервис:
+# Эндпоинты
 
-```bash
-go run ./cmd
-```
+Короткое описание HTTP‑эндпоинтов сервиса (маршруты находятся в корне сервера).
 
-(или `go build` и запуск сгенерированного бинарника)
+- POST /save
+	- Body (JSON): { "long_url": "https://example.com/..." }
+	- Ответ 200: { "message": "URL saved successfully with short URL: http://<host>:<port>/<id>" }
 
-### Эндпоинты
-1) Сохранить длинную ссылку
+- GET /random
+	- Ответ 200: { "short_url": "http://<host>:<port>/<id>" }
 
-- URL: `POST /api/v1/save`
-- Body (JSON):
+- GET /:short_url_id
+	- Пример: GET /5vrTql7AOt
+	- Возвращает HTTP 302 редирект на оригинальную длинную ссылку
 
-```json
-{ "long_url": "https://example.com/some/very/long/path" }
-```
-- Успешный ответ: 200
-
-```json
-{ "message": "URL saved successfully" }
-```
-
-2) Получить случайную короткую ссылку
-
-- URL: `GET /api/v1/random`
-- Успешный ответ: 200
-
-```json
-{ "short_url": "abc123" }
-```
-
-3) Перенаправление по короткой ссылке
-
-- URL (intended): `GET /api/v1/redirect/:short_url`
-- Описание: возвращает редирект (HTTP 302) на соответствующую длинную ссылку.
-
-Пример (curl):
-
-```bash
-curl -v http://localhost:8080/api/v1/redirect/abc123
-```
-
-4) Удалить короткую ссылку
-
-- URL (intended): `POST /api/v1/delete/:short_url`
-- Пример (curl):
-
-```bash
-curl -X POST http://localhost:8080/api/v1/delete/abc123
-```
-
-### Замечание о несовпадении маршрутов
-В коде обработчики читают параметр `short_url` через `c.Param("short_url")`, тогда как маршруты в `internal/adapters/rest/routes.go` зарегистрированы как `/redirect` и `/delete` без явного параметра в пути. Рекомендуется привести маршруты и обработчики в соответствие. Два простых варианта:
-
-1. Изменить маршруты на `/redirect/:short_url` и `/delete/:short_url` (рекомендуется).
-2. Или изменить обработчики на чтение из query-параметра или тела запроса, если так задуман API.
-
-### Примеры curl
-
-Save:
-
-```bash
-curl -X POST -H "Content-Type: application/json" -d '{"long_url":"https://example.com"}' http://localhost:8080/api/v1/save
-```
-
-Get random:
-
-```bash
-curl http://localhost:8080/api/v1/random
-```
-
-Redirect (browser / curl):
-
-```bash
-curl -v http://localhost:8080/api/v1/redirect/abc123
-```
-
-Delete:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/delete/abc123
-```
+- POST /delete
+	- Body (JSON): { "short_url": "http://<host>:<port>/<id>" } (или используйте `/delete/:short_url` если предпочитаете path param)
+	- Ответ 200: { "message": "URL deleted successfully" }
 
 ---
+
+Файл с примерами переменных окружения: `.env.example`.
 
 
