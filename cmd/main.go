@@ -9,6 +9,7 @@ import (
 
 	"github.com/Util787/url-shortener/internal/adapters/rest"
 	"github.com/Util787/url-shortener/internal/adapters/storage"
+	"github.com/Util787/url-shortener/internal/adapters/tgbot"
 	"github.com/Util787/url-shortener/internal/config"
 	"github.com/Util787/url-shortener/internal/shortener-usecase"
 )
@@ -21,6 +22,18 @@ func main() {
 	pgStorage := storage.MustInitPostgres(context.Background(), cfg.PostgresConfig)
 
 	ShortenerUsecase := shortener.NewShortenerUsecase(&pgStorage)
+	// Start Telegram bot if token provided
+	if cfg.TgBotConfig.Token != "" {
+		bot, err := tgbot.NewBot(cfg.TgBotConfig.Token, ShortenerUsecase)
+		if err != nil {
+			log.Error("failed to init telegram bot", slog.String("error", err.Error()))
+		} else {
+			go func() {
+				log.Info("Telegram bot started")
+				bot.Start()
+			}()
+		}
+	}
 
 	server := rest.NewRestServer(log, cfg.HTTPServerConfig, ShortenerUsecase)
 

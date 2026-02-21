@@ -58,8 +58,8 @@ func (h *Handler) GetRandomURL(c *gin.Context) {
 func (h *Handler) RedirectURL(c *gin.Context) {
 	log := common.LogOpAndId(c.Request.Context(), common.GetOperationName(), h.log)
 
-	shortURL := c.Param("short_url")
-	longURL, err := h.ShortenerUsecase.GetLongURL(shortURL)
+	shortURLId := c.Param("short_url_id")
+	longURL, err := h.ShortenerUsecase.GetLongURL(common.RedirectBaseURL + shortURLId)
 	if err != nil {
 		log.Error("failed to get long URL", "error", err)
 		newErrorResponse(c, log, 500, "failed to get long URL", err)

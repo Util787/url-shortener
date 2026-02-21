@@ -6,6 +6,8 @@ import (
 	"runtime"
 )
 
+var RedirectBaseURL string = "http://localhost:8080/"
+
 type ContextKey string
 
 // GetOperationName returns PackageName.FunctionName of the func it was called in

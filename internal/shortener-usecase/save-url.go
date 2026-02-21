@@ -7,16 +7,17 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/Util787/url-shortener/internal/common"
 	"github.com/google/uuid"
 )
 
 func (s *shortenerUsecase) SaveURL(longURL string) error {
-	ok, scheme := validateURL(longURL)
+	ok, _ := validateURL(longURL)
 	if !ok {
 		return fmt.Errorf("invalid URL: %s", longURL)
 	}
 
-	id, shortURL := generateShortURL(scheme)
+	id, shortURL := generateShortURL()
 
 	//validation for duplicates
 	exists, err := s.storage.LongURLExists(context.Background(), longURL)
@@ -58,12 +59,12 @@ func validateURL(rawURL string) (bool, string) {
 	return true, strings.ToLower(parsedURL.Scheme)
 }
 
-func generateShortURL(scheme string) (id string, shortURL string) {
+func generateShortURL() (id string, shortURL string) {
 	u := uuid.New()
 
 	id = base62Encode(new(big.Int).SetBytes(u[:]))
 
-	shortURL = fmt.Sprintf("%s://short.url/%s", scheme, id)
+	shortURL = common.RedirectBaseURL + id
 	return id, shortURL
 }
 
