@@ -13,10 +13,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		shortener := v1.Group("/")
 		{
+			shortener.GET("/redirect", h.RedirectURL)
+			shortener.GET("/random", h.GetRandomURL)
 			shortener.POST("/save", h.SaveURL)
-			shortener.POST("/redirect", h.RedirectURL)
 			shortener.POST("/delete", h.DeleteURL)
-			shortener.POST("/random", h.GetRandomURL)
 		}
 	}
 	return router

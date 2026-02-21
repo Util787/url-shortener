@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Util787/test-task/internal/config"
+	"github.com/Util787/url-shortener/internal/config"
 )
 
 const ( // чтобы не загромождать конфиг
@@ -20,10 +20,10 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewRestServer(log *slog.Logger, config config.HTTPServerConfig) Server {
+func NewRestServer(log *slog.Logger, config config.HTTPServerConfig, shortenerUsecase shortenerUsecase) Server {
 	handler := Handler{
-		log: log,
-		// shortener
+		log:              log,
+		ShortenerUsecase: shortenerUsecase,
 	}
 
 	httpServer := &http.Server{
