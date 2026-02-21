@@ -9,6 +9,7 @@ import (
 
 	"github.com/Util787/url-shortener/internal/common"
 	"github.com/Util787/url-shortener/internal/config"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -62,20 +63,18 @@ func (p *PostgresStorage) SaveURL(ctx context.Context, id string, longURL string
 
 	qb := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	upd := qb.Update("url_mappings").
-		Set("long_url", longURL).
-		Set("short_url", shortURL).
-		Set("created_at", time.Now().Unix()).
-		Set("id", id)
+	upd := qb.Insert("url_mappings").
+		Columns("long_url", "short_url", "created_at", "id").
+		Values(longURL, shortURL, time.Now().Unix(), id)
 
 	sqlStr, args, err := upd.ToSql()
 	if err != nil {
-		return fmt.Errorf("%s: failed to build update query: %w", op, err)
+		return fmt.Errorf("%s: failed to build insert query: %w", op, err)
 	}
 
 	_, err = p.pgxPool.Exec(ctx, sqlStr, args...)
 	if err != nil {
-		return fmt.Errorf("%s: failed to execute update query: %w", op, err)
+		return fmt.Errorf("%s: failed to execute insert query: %w", op, err)
 	}
 
 	return nil
@@ -98,6 +97,9 @@ func (p *PostgresStorage) LongURLExists(ctx context.Context, longURL string) (bo
 	var shortURL string
 	err = p.pgxPool.QueryRow(ctx, sqlStr, args...).Scan(&shortURL)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return false, nil
+		}
 		return false, fmt.Errorf("%s: failed to execute select query: %w", op, err)
 	}
 
@@ -121,6 +123,9 @@ func (p *PostgresStorage) ShortURLExists(ctx context.Context, shortURL string) (
 	var longURL string
 	err = p.pgxPool.QueryRow(ctx, sqlStr, args...).Scan(&longURL)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return false, nil
+		}
 		return false, fmt.Errorf("%s: failed to execute select query: %w", op, err)
 	}
 

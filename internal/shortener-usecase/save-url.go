@@ -35,7 +35,7 @@ func (s *shortenerUsecase) SaveURL(longURL string) error {
 		return fmt.Errorf("short URL already exists: %s", shortURL)
 	}
 
-	return s.storage.SaveURL(context.Background(), id, shortURL, longURL)
+	return s.storage.SaveURL(context.Background(), id, longURL, shortURL)
 }
 
 // returns bool and protocol(scheme)
