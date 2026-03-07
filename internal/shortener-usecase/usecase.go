@@ -3,7 +3,8 @@ package shortener
 import "context"
 
 type shortenerUsecase struct {
-	storage URLMappingStorage
+	storage         URLMappingStorage
+	redirectBaseURL string
 }
 
 type URLMappingStorage interface {
@@ -15,8 +16,9 @@ type URLMappingStorage interface {
 	DeleteURL(ctx context.Context, id *string, longURL *string, shortURL *string) error
 }
 
-func NewShortenerUsecase(storage URLMappingStorage) *shortenerUsecase {
+func NewShortenerUsecase(storage URLMappingStorage, redirectBaseURL string) *shortenerUsecase {
 	return &shortenerUsecase{
-		storage: storage,
+		storage:         storage,
+		redirectBaseURL: redirectBaseURL,
 	}
 }

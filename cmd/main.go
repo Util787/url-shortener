@@ -21,7 +21,7 @@ func main() {
 
 	pgStorage := storage.MustInitPostgres(context.Background(), cfg.PostgresConfig)
 
-	ShortenerUsecase := shortener.NewShortenerUsecase(&pgStorage)
+	ShortenerUsecase := shortener.NewShortenerUsecase(&pgStorage, cfg.RedirectBaseURL)
 	// Start Telegram bot if token provided
 	if cfg.TgBotConfig.Token != "" {
 		bot, err := tgbot.NewBot(cfg.TgBotConfig.Token, ShortenerUsecase)
@@ -35,7 +35,7 @@ func main() {
 		}
 	}
 
-	server := rest.NewRestServer(log, cfg.HTTPServerConfig, ShortenerUsecase)
+	server := rest.NewRestServer(log, cfg.HTTPServerConfig, ShortenerUsecase, cfg.RedirectBaseURL)
 
 	go func() {
 		log.Info("HTTP server start", slog.String("host", cfg.HTTPServerConfig.Host), slog.Int("port", cfg.HTTPServerConfig.Port))

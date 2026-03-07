@@ -6,7 +6,7 @@ import (
 	"runtime"
 )
 
-var RedirectBaseURL string = "http://localhost:8080/"
+// var RedirectBaseURL string = "http://localhost:8080/"
 
 type ContextKey string
 

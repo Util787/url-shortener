@@ -17,6 +17,7 @@ type shortenerUsecase interface {
 type Handler struct {
 	log              *slog.Logger
 	ShortenerUsecase shortenerUsecase
+	redirectBaseURL  string
 }
 
 type SaveURLRequest struct {
@@ -60,7 +61,7 @@ func (h *Handler) RedirectURL(c *gin.Context) {
 	log := common.LogOpAndId(c.Request.Context(), common.GetOperationName(), h.log)
 
 	shortURLId := c.Param("short_url_id")
-	longURL, err := h.ShortenerUsecase.GetLongURL(common.RedirectBaseURL + shortURLId)
+	longURL, err := h.ShortenerUsecase.GetLongURL(h.redirectBaseURL + shortURLId)
 	if err != nil {
 		log.Error("failed to get long URL", "error", err)
 		newErrorResponse(c, log, 500, "failed to get long URL", err)

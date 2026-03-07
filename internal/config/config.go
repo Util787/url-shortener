@@ -9,6 +9,7 @@ type Config struct {
 	PostgresConfig
 	HTTPServerConfig
 	TgBotConfig
+	URLShortenerConfig
 }
 
 type PostgresConfig struct {
@@ -26,6 +27,10 @@ type HTTPServerConfig struct {
 
 type TgBotConfig struct {
 	Token string `env:"TG_BOT_TOKEN"`
+}
+
+type URLShortenerConfig struct {
+	RedirectBaseURL string `env:"REDIRECT_BASE_URL"`
 }
 
 func MustLoadConfig() Config {

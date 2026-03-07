@@ -14,6 +14,7 @@
 - `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` — доступ к PostgreSQL
 - `HTTP_SERVER_HOST`, `HTTP_SERVER_PORT` — адрес и порт HTTP сервера
 - `TG_BOT_TOKEN` — токен телеграм-бота (опционально)
+- `REDIRECT_BASE_URL` - url по которому происходит редирект
 
 ### Запуск
 1. Запустите PostgreSQL (например, в Docker) и примените миграции из `migrations/postgres`.

@@ -20,10 +20,11 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewRestServer(log *slog.Logger, config config.HTTPServerConfig, shortenerUsecase shortenerUsecase) Server {
+func NewRestServer(log *slog.Logger, config config.HTTPServerConfig, shortenerUsecase shortenerUsecase, redirectBaseURL string) Server {
 	handler := Handler{
 		log:              log,
 		ShortenerUsecase: shortenerUsecase,
+		redirectBaseURL:  redirectBaseURL,
 	}
 
 	httpServer := &http.Server{
