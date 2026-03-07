@@ -371,11 +371,21 @@
                     body: JSON.stringify({ long_url: longUrl })
                 });
 
-                const data = await response.text();
+                const raw = await response.text();
+
+                // Try to parse JSON error/message returned by server
+                let parsed = null;
+                try {
+                    parsed = JSON.parse(raw);
+                } catch (_) {
+                    // not JSON, keep raw
+                }
 
                 if (response.ok) {
-                    // Парсим ответ: "URL saved successfully with short URL: http://host:port/code"
-                    const match = data.match(/short URL: (https?:\/\/[^\/]+\/([^\/\s]+))/);
+                    // Server returns JSON like { message: "URL saved successfully with short URL: http://host:port/code" }
+                    const message = parsed && (parsed.message || parsed.msg) ? (parsed.message || parsed.msg) : raw;
+                    // Try to extract URL from message text
+                    const match = String(message).match(/short URL: (https?:\/\/[^\/]+\/([^\/\s]+))/);
 
                     if (match) {
                         const fullShortUrl = match[1];
@@ -389,10 +399,13 @@
                         resultBlock.style.display = 'block';
                         urlInput.value = '';
                     } else {
-                        showError('Не удалось распарсить ответ сервера');
+                        // If we couldn't parse the message, show it to the user
+                        showError('Не удалось распарсить ответ сервера: ' + message);
                     }
                 } else {
-                    showError(`Ошибка ${response.status}: ${data || 'Неизвестная ошибка'}`);
+                    // Prefer server-provided error fields when available
+                    const reason = parsed && (parsed.error || parsed.message || parsed.msg) ? (parsed.error || parsed.message || parsed.msg) : raw;
+                    showError(`Ошибка ${response.status}: ${reason || 'Неизвестная ошибка'}`);
                 }
             } catch (error) {
                 showError('Ошибка соединения с сервером');
