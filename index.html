@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShortLink - сокращение ссылок</title>
+    <!-- Подключите свои стили или используйте встроенные ниже -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Placeholder color: slightly muted gray for better UX */
+        input::placeholder {
+            color: rgba(0, 0, 0, 0.45);
+        }
+
+        /* Vendor prefixes for broader browser support */
+        input::-webkit-input-placeholder {
+            color: rgba(0, 0, 0, 0.45);
+        }
+
+        input:-ms-input-placeholder {
+            color: rgba(0, 0, 0, 0.45);
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5a67d8;
+        }
+
+        button:disabled {
+            background: #a0a0a0;
+            cursor: not-allowed;
+        }
+
+        .random-btn {
+            width: 100%;
+            background: #48bb78;
+            margin-bottom: 20px;
+        }
+
+        .random-btn:hover {
+            background: #38a169;
+        }
+
+        /* examples removed */
+
+        .result-block {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #48bb78;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+        }
+
+        .result-label {
+            display: block;
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .result-value span {
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            background: #e2e8f0;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .copy-btn:hover {
+            background: #cbd5e0;
+        }
+
+        .test-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .test-link:hover {
+            text-decoration: underline;
+        }
+
+        .error-block {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 8px;
+            color: #c53030;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .reset-btn {
+            background: #718096;
+        }
+
+        .reset-btn:hover {
+            background: #4a5568;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔗 ShortLink</h1>
+        <p class="subtitle">Простой сервис сокращения ссылок</p>
+
+        <!-- Основная форма -->
+        <form id="shortenForm">
+            <div class="form-group">
+                <input type="url" id="urlInput" placeholder="https://example.com/very-long-url" required>
+                <button type="submit" id="submitBtn">Сократить</button>
+            </div>
+        </form>
+
+        <!-- Кнопка случайной ссылки (GET /random) -->
+        <button class="random-btn" id="randomBtn">
+            🎲 Случайная ссылка
+        </button>
+
+        <!-- Примеры ссылок удалены -->
+
+        <!-- Блок результата (скрыт по умолчанию) -->
+        <div class="result-block" id="resultBlock" style="display: none;">
+            <div class="result-item">
+                <span class="result-label">Исходная ссылка:</span>
+                <div class="result-value">
+                    <span id="originalUrl"></span>
+                </div>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Короткая ссылка:</span>
+                <div class="result-value">
+                    <span id="shortUrl"></span>
+                    <button class="copy-btn" onclick="copyToClipboard('shortUrl', this)">
+                        📋 Копировать
+                    </button>
+                    <a href="#" id="shortUrlLink" target="_blank" class="test-link">
+                        Перейти →
+                    </a>
+                </div>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Код:</span>
+                <div class="result-value">
+                    <span id="shortCode"></span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="copy-btn" onclick="resetForm()">➕ Ещё ссылка</button>
+            </div>
+        </div>
+
+        <!-- Блок ошибки (скрыт по умолчанию) -->
+        <div class="error-block" id="errorBlock" style="display: none;">
+            <span id="errorText"></span>
+        </div>
+
+        <!-- Ссылка на Telegram бот (если есть) -->
+        <div class="footer">
+            <p>
+                🤖 Есть Telegram бот: <a href="#" id="botLink">@urlcutcutbot</a>
+                | <a href="https://github.com/Util787/url-shortener" target="_blank">GitHub</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Настройки
+        const API_BASE_URL = 'http://localhost:8080'; // адрес вашего Go-сервера
+        const BOT_USERNAME = 'urlcutcutbot'; // username бота (если есть)
+
+        // Элементы
+        const form = document.getElementById('shortenForm');
+        const urlInput = document.getElementById('urlInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const randomBtn = document.getElementById('randomBtn');
+        const resultBlock = document.getElementById('resultBlock');
+        const errorBlock = document.getElementById('errorBlock');
+        const errorText = document.getElementById('errorText');
+        const originalUrlSpan = document.getElementById('originalUrl');
+        const shortUrlSpan = document.getElementById('shortUrl');
+        const shortUrlLink = document.getElementById('shortUrlLink');
+        const shortCodeSpan = document.getElementById('shortCode');
+        const botLink = document.getElementById('botLink');
+
+        // Устанавливаем ссылку на бота
+        if (botLink) {
+            botLink.href = `https://t.me/${BOT_USERNAME}`;
+            botLink.textContent = `@${BOT_USERNAME}`;
+        }
+
+        // Скрыть ошибку
+        function hideError() {
+            errorBlock.style.display = 'none';
+        }
+
+        // Показать ошибку
+        function showError(message) {
+            errorText.textContent = message;
+            errorBlock.style.display = 'block';
+            resultBlock.style.display = 'none';
+        }
+
+        // Копирование в буфер обмена
+        // Передавайте вторым аргументом элемент кнопки: copyToClipboard('elementId', this)
+        window.copyToClipboard = function (elementId, btn) {
+            const element = document.getElementById(elementId);
+            const text = element ? element.textContent : String(elementId);
+
+            navigator.clipboard.writeText(text).then(() => {
+                if (btn) {
+                    const originalText = btn.textContent;
+                    btn.textContent = '✓ Скопировано';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 1500);
+                }
+            }).catch(() => {
+                alert('Не удалось скопировать');
+            });
+        };
+
+        // Сброс формы
+        window.resetForm = function () {
+            resultBlock.style.display = 'none';
+            urlInput.value = '';
+            urlInput.focus();
+            hideError();
+        };
+
+        // Обработка формы (POST /save)
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const longUrl = urlInput.value.trim();
+            if (!longUrl) return;
+
+            // Показываем загрузку
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Сокращаем...';
+            hideError();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ long_url: longUrl })
+                });
+
+                const data = await response.text();
+
+                if (response.ok) {
+                    // Парсим ответ: "URL saved successfully with short URL: http://host:port/code"
+                    const match = data.match(/short URL: (https?:\/\/[^\/]+\/([^\/\s]+))/);
+
+                    if (match) {
+                        const fullShortUrl = match[1];
+                        const shortCode = match[2];
+
+                        originalUrlSpan.textContent = longUrl;
+                        shortUrlSpan.textContent = fullShortUrl;
+                        shortUrlLink.href = fullShortUrl;
+                        shortCodeSpan.textContent = shortCode;
+
+                        resultBlock.style.display = 'block';
+                        urlInput.value = '';
+                    } else {
+                        showError('Не удалось распарсить ответ сервера');
+                    }
+                } else {
+                    showError(`Ошибка ${response.status}: ${data || 'Неизвестная ошибка'}`);
+                }
+            } catch (error) {
+                showError('Ошибка соединения с сервером');
+                console.error(error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Сократить';
+            }
+        });
+
+        // Случайная ссылка (GET /random)
+        randomBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/random`);
+                const data = await response.json();
+
+                if (response.ok && data.short_url) {
+                    // Копируем в буфер обмена
+                    await navigator.clipboard.writeText(data.short_url);
+
+                    // Показываем уведомление
+                    const originalText = randomBtn.textContent;
+                    randomBtn.textContent = '✓ Скопировано!';
+                    setTimeout(() => {
+                        randomBtn.textContent = originalText;
+                    }, 1500);
+                } else {
+                    showError('Не удалось получить случайную ссылку');
+                }
+            } catch (error) {
+                showError('Ошибка при получении случайной ссылки');
+            }
+        });
+
+        // Примеры ссылок удалены — никакой логики не требуется
+    </script>
+</body>
+
+</html>
