@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  migrate:
+    image: migrate/migrate:v4.15.2
+    container_name: db_migrate
+    depends_on:
+      db:
+        condition: service_healthy   
+    env_file: .env
+    volumes:
+      - ./migrations/postgres:/migrations
+    command:
+      [
+        "-path",
+        "/migrations",
+        "-database",
+        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable",
+        "up"
+      ]
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: app_service
+    env_file: .env
+    working_dir: /app
+    volumes:
+      - ./.env:/app/.env:ro
+    ports:
+      - "${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}"
+    depends_on:
+      db:
+        condition: service_healthy   
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge
