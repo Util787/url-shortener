@@ -1,64 +1,119 @@
-## Краткая документация API
+# 🔗 URL Shortener Service
 
-Небольшая инструкция по запуску и использованию HTTP API сервиса сокращения ссылок.
+Микросервис для сокращения длинных ссылок.  
+Сервис сохраняет ссылки в PostgreSQL, отдаёт их по REST API и поддерживает редиректы.
 
-### Коротко
-- Базовый префикс: `/`
-- Формат: JSON для POST-запросов
-
-### Переменные окружения
-Скопируйте `.env.example` в `.env` и заполните значения перед запуском.
-
-Основные переменные (в файле `.env.example`):
-
-- `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` — доступ к PostgreSQL
-- `HTTP_SERVER_HOST`, `HTTP_SERVER_PORT` — адрес и порт HTTP сервера
-- `TG_BOT_TOKEN` — токен телеграм-бота (опционально)
-- `REDIRECT_BASE_URL` - url по которому происходит редирект
-
-## Запуск
-
-
-Вариант 1 — Docker Compose (миграции автоматические)
-
-- Скопируйте файл `.env.example` в `.env` и заполните значения переменных окружения 
-
-```bash
-docker compose up --build
-```
-
-Вариант 2 — Локально (ручной запуск и применение миграций)
-
-- Запустите PostgreSQL (например, в Docker) или используйте существующую БД.
-- Примените миграции из каталога `migrations/postgres` к вашей базе данных.
-- Скопируйте файл `.env.example` в `.env` и заполните значения переменных окружения 
-- Запустите сервер вручную:
-
-```bash
-go run ./cmd/main.go
-```
-
-
-# Эндпоинты
-
-Короткое описание HTTP‑эндпоинтов сервиса (маршруты находятся в корне сервера).
-
-- POST /save
-	- Body (JSON): { "long_url": "https://example.com/..." }
-	- Ответ 200: { "message": "URL saved successfully with short URL: http://<host>:<port>/<id>" }
-
-- GET /random
-	- Ответ 200: { "short_url": "http://<host>:<port>/<id>" }
-
-- GET /:short_url_id
-	- Пример: GET /5vrTql7AOt
-	- Возвращает HTTP 302 редирект на оригинальную длинную ссылку
-
-- POST /delete
-	- Body (JSON): { "short_url": "http://<host>:<port>/<id>" } (или используйте `/delete/:short_url` если предпочитаете path param)
-	- Ответ 200: { "message": "URL deleted successfully" }
+## Features
+- ✅ REST API для сохранения и получения ссылок
+- ✅ Редирект по короткой ссылке
+- ✅ Поддержка PostgreSQL
+- ✅ Telegram-бот (опционально)
+- ✅ Готов к запуску через Docker Compose
 
 ---
 
+## Quick start 🚀
 
+### Requirements 📦
+- Docker
+- Go 1.24+ (только для ручного запуска)
 
+---
+
+### 1. Clone Repository 📂
+```bash
+git clone https://github.com/Util787/url-shortener && cd url-shortener
+```
+
+---
+
+### 2. Configure .env ⚙️
+Скопируйте `.env.example` в `.env` и настройте переменные окружения:
+
+```bash
+cp .env.example .env
+```
+
+---
+
+### 3. Run with Docker Compose 🐳
+```bash
+docker compose up --build
+```
+Миграции применятся автоматически.
+
+---
+
+## Manual run (without Docker) 🛠️
+Если хотите запустить локально:
+
+```bash
+go mod tidy
+go run ./cmd/main.go
+```
+
+Не забудьте предварительно запустить PostgreSQL и применить миграции из `migrations/postgres`.
+
+---
+
+## 🌐 API Endpoints
+
+### `POST /save`
+Сохраняет длинную ссылку и возвращает короткую.
+
+**Request:**
+```json
+{
+  "long_url": "https://example.com/very/long/url"
+}
+```
+
+**Response 200 OK:**
+```json
+{
+  "message": "URL saved successfully with short URL: http://localhost:8080/abc123"
+}
+```
+
+---
+
+### `GET /random`
+Возвращает случайную короткую ссылку.
+
+**Response 200 OK:**
+```json
+{
+  "short_url": "http://localhost:8080/abc123"
+}
+```
+
+---
+
+### `GET /:short_url_id`
+Редирект на оригинальную длинную ссылку.
+
+**Example:**
+```
+GET /abc123
+```
+- ✅ Если найдена — HTTP 302 Redirect
+- ❌ Если нет — 404 Not Found
+
+---
+
+### `POST /delete`
+Удаляет короткую ссылку.
+
+**Request:**
+```json
+{
+  "short_url": "http://localhost:8080/abc123"
+}
+```
+
+**Response 200 OK:**
+```json
+{
+  "message": "URL deleted successfully"
+}
+```
